@@ -1,0 +1,150 @@
+{% extends "shared/base.html" %}
+{% block title %}Analytics{% endblock %}
+
+{% block nav_links %}
+  <a href="/dashboard">Dashboard</a>
+  <a href="/dashboard/analytics" style="color:var(--text);font-weight:600">Analytics</a>
+  <a href="/logout">Logout</a>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+
+  <div class="flex-between mt-2" style="margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
+    <h1 class="page-title" style="margin:0">Analytics Overview</h1>
+    <span class="text-muted">
+      {{ total }} quer{{ 'y' if total == 1 else 'ies' }} total
+      {% if pending_ai %} &mdash; <span style="color:var(--warning)">{{ pending_ai }} pending AI classification</span>{% endif %}
+    </span>
+  </div>
+
+  <!-- Summary stat cards -->
+  <div class="stats-row">
+    {% for label, key, color in [
+        ('Open',        'open',        'var(--primary)'),
+        ('In Progress', 'in_progress', 'var(--warning)'),
+        ('Resolved',    'resolved',    'var(--success)'),
+        ('Closed',      'closed',      'var(--muted)'),
+    ] %}
+    <div class="stat-card">
+      <div class="stat-value" style="color:{{ color }}">{{ by_status.get(key, 0) }}</div>
+      <div class="stat-label">{{ label }}</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Charts grid -->
+  <div class="analytics-grid mt-3">
+
+    <!-- Category breakdown -->
+    <div class="card">
+      <p class="card-title">Queries by Category</p>
+      {% set cat_total = by_category.values() | sum if by_category else 0 %}
+      {% for cat, color in [
+          ('billing',   '#2563eb'),
+          ('technical', '#7c3aed'),
+          ('complaint', '#dc2626'),
+          ('general',   '#16a34a'),
+          ('other',     '#64748b'),
+      ] %}
+        {% set count = by_category.get(cat, 0) %}
+        {% set pct = ((count / cat_total * 100) | int) if cat_total else 0 %}
+        <div class="chart-row">
+          <span class="chart-label">{{ cat.title() }}</span>
+          <div class="chart-bar-wrap">
+            <div class="chart-bar" style="width:{{ pct }}%;background:{{ color }}"></div>
+          </div>
+          <span class="chart-count">{{ count }}</span>
+        </div>
+      {% endfor %}
+      {% if not cat_total %}
+        <p class="text-muted" style="font-size:.85rem">No classified queries yet.</p>
+      {% endif %}
+    </div>
+
+    <!-- Priority breakdown -->
+    <div class="card">
+      <p class="card-title">Queries by Priority</p>
+      {% set pri_total = by_priority.values() | sum if by_priority else 0 %}
+      {% for pri, color in [
+          ('high',   'var(--danger)'),
+          ('medium', 'var(--warning)'),
+          ('low',    'var(--success)'),
+      ] %}
+        {% set count = by_priority.get(pri, 0) %}
+        {% set pct = ((count / pri_total * 100) | int) if pri_total else 0 %}
+        <div class="chart-row">
+          <span class="chart-label">{{ pri.title() }}</span>
+          <div class="chart-bar-wrap">
+            <div class="chart-bar" style="width:{{ pct }}%;background:{{ color }}"></div>
+          </div>
+          <span class="chart-count">{{ count }}</span>
+        </div>
+      {% endfor %}
+      {% if not pri_total %}
+        <p class="text-muted" style="font-size:.85rem">No classified queries yet.</p>
+      {% endif %}
+    </div>
+
+    <!-- Sentiment breakdown -->
+    <div class="card">
+      <p class="card-title">Customer Sentiment</p>
+      {% set sent_total = by_sentiment.values() | sum if by_sentiment else 0 %}
+      {% for sent, color in [
+          ('positive', 'var(--success)'),
+          ('neutral',  'var(--muted)'),
+          ('negative', 'var(--danger)'),
+      ] %}
+        {% set count = by_sentiment.get(sent, 0) %}
+        {% set pct = ((count / sent_total * 100) | int) if sent_total else 0 %}
+        <div class="chart-row">
+          <span class="chart-label">{{ sent.title() }}</span>
+          <div class="chart-bar-wrap">
+            <div class="chart-bar" style="width:{{ pct }}%;background:{{ color }}"></div>
+          </div>
+          <span class="chart-count">{{ count }}</span>
+        </div>
+      {% endfor %}
+      {% if not sent_total %}
+        <p class="text-muted" style="font-size:.85rem">No classified queries yet.</p>
+      {% endif %}
+    </div>
+
+    <!-- Resolution rate -->
+    <div class="card">
+      <p class="card-title">Resolution Overview</p>
+      {% set resolved = by_status.get('resolved', 0) + by_status.get('closed', 0) %}
+      {% set unresolved = by_status.get('open', 0) + by_status.get('in_progress', 0) %}
+      {% set res_pct = ((resolved / total * 100) | int) if total else 0 %}
+      {% set unres_pct = 100 - res_pct %}
+      <div class="chart-row">
+        <span class="chart-label">Resolved</span>
+        <div class="chart-bar-wrap">
+          <div class="chart-bar" style="width:{{ res_pct }}%;background:var(--success)"></div>
+        </div>
+        <span class="chart-count">{{ resolved }}</span>
+      </div>
+      <div class="chart-row">
+        <span class="chart-label">Open / In Progress</span>
+        <div class="chart-bar-wrap">
+          <div class="chart-bar" style="width:{{ unres_pct }}%;background:var(--primary)"></div>
+        </div>
+        <span class="chart-count">{{ unresolved }}</span>
+      </div>
+      {% if total %}
+      <p class="text-muted mt-2" style="font-size:.85rem">
+        {{ res_pct }}% of all queries have been resolved or closed.
+      </p>
+      {% else %}
+        <p class="text-muted" style="font-size:.85rem">No queries yet.</p>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <div class="mt-3">
+    <a href="/dashboard" class="btn btn-outline">&larr; Back to Dashboard</a>
+  </div>
+
+</div>
+{% endblock %}

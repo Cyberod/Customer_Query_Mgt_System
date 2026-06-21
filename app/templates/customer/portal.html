@@ -1,0 +1,57 @@
+{% extends "shared/base.html" %}
+{% block title %}My Queries{% endblock %}
+
+{% block nav_links %}
+  <span class="text-muted">{{ user.full_name }}</span>
+  <a href="/portal/submit" class="btn btn-primary btn-sm">+ New Query</a>
+  <a href="/logout">Logout</a>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="flex-between mt-2">
+    <h1 class="page-title" style="margin-bottom:0">My Queries</h1>
+    <a href="/portal/submit" class="btn btn-primary">+ Submit New Query</a>
+  </div>
+
+  <div class="card mt-3">
+    {% if queries %}
+      <table class="table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Subject</th>
+            <th>Status</th>
+            <th>Priority</th>
+            <th>Category</th>
+            <th>Submitted</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for q in queries %}
+          <tr style="cursor:pointer" onclick="location.href='/portal/query/{{ q.id }}'">
+            <td class="text-muted">{{ q.id }}</td>
+            <td><strong>{{ q.subject }}</strong></td>
+            <td><span class="badge badge-{{ q.status }}">{{ q.status.replace('_', ' ') }}</span></td>
+            <td>
+              {% if q.priority %}
+                <span class="badge badge-{{ q.priority }}">{{ q.priority }}</span>
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+            <td>{{ q.category or "—" }}</td>
+            <td class="text-muted">{{ q.created_at.strftime("%b %d, %Y") }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div style="text-align:center; padding: 2rem 0;">
+        <p class="text-muted">No queries yet.</p>
+        <a href="/portal/submit" class="btn btn-primary mt-2">Submit your first query</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

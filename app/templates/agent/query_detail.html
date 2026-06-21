@@ -1,0 +1,147 @@
+{% extends "shared/base.html" %}
+{% block title %}Query #{{ query.id }}{% endblock %}
+
+{% block nav_links %}
+  <a href="/dashboard">Dashboard</a>
+  <a href="/logout">Logout</a>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+
+  <!-- Header -->
+  <div class="flex-between mt-2" style="margin-bottom:1.2rem;flex-wrap:wrap;gap:1rem">
+    <div>
+      <h1 class="page-title" style="margin-bottom:.25rem">{{ query.subject }}</h1>
+      <span class="text-muted">
+        Query #{{ query.id }} &mdash;
+        from <strong>{{ query.customer.full_name }}</strong>
+        ({{ query.customer.email }}) &mdash;
+        {{ query.created_at.strftime("%B %d, %Y at %H:%M") }}
+      </span>
+    </div>
+    <span class="badge badge-{{ query.status }}" style="font-size:.85rem;padding:.35rem .9rem">
+      {{ query.status.replace('_',' ').title() }}
+    </span>
+  </div>
+
+  <div class="agent-layout">
+
+    <!-- Left: conversation -->
+    <div class="agent-main">
+
+      <!-- Meta pills -->
+      <div class="query-meta">
+        <div class="meta-item"><span>Priority: </span>
+          {% if query.priority %}<strong>{{ query.priority.title() }}</strong>{% else %}Pending AI{% endif %}
+        </div>
+        <div class="meta-item"><span>Category: </span>
+          {% if query.category %}<strong>{{ query.category.title() }}</strong>{% else %}Pending AI{% endif %}
+        </div>
+        <div class="meta-item"><span>Sentiment: </span>
+          {% if query.sentiment %}<strong>{{ query.sentiment.title() }}</strong>{% else %}Pending AI{% endif %}
+        </div>
+        <div class="meta-item"><span>Assigned: </span>
+          {% if query.assigned_agent_id == agent.id %}<strong>You</strong>
+          {% elif query.assigned_agent_id %}<strong>Another agent</strong>
+          {% else %}Unassigned{% endif %}
+        </div>
+      </div>
+
+      <!-- AI summary -->
+      {% if query.ai_summary %}
+      <div class="alert alert-info mt-2">
+        <strong>AI Summary:</strong> {{ query.ai_summary }}
+      </div>
+      {% endif %}
+
+      <!-- Thread -->
+      <div class="card mt-2">
+        <p class="card-title">Conversation Thread</p>
+        <div class="message-thread">
+
+          <!-- Original query -->
+          <div class="message">
+            <div class="message-header">
+              <strong>{{ query.customer.full_name }} (customer)</strong>
+              <span>{{ query.created_at.strftime("%b %d, %Y %H:%M") }}</span>
+            </div>
+            <p style="white-space:pre-wrap">{{ query.body }}</p>
+          </div>
+
+          <!-- Replies -->
+          {% for msg in query.messages %}
+            <div class="message {% if not msg.is_ai_draft %}agent-msg{% else %}ai-draft{% endif %}">
+              <div class="message-header">
+                <strong>
+                  {% if msg.is_ai_draft %}🤖 AI Draft
+                  {% elif msg.sender_id == query.customer_id %}{{ query.customer.full_name }}
+                  {% else %}{{ msg.sender.full_name }} (agent){% endif %}
+                </strong>
+                <span>{{ msg.created_at.strftime("%b %d, %Y %H:%M") }}</span>
+              </div>
+              <p style="white-space:pre-wrap">{{ msg.body }}</p>
+            </div>
+          {% endfor %}
+
+          {% if not query.messages %}
+            <p class="text-muted" style="text-align:center;padding:1rem 0">No replies yet.</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Reply form -->
+      <div class="card mt-2">
+        <p class="card-title">Send Reply</p>
+        <form method="post" action="/dashboard/query/{{ query.id }}/reply">
+          <div class="form-group">
+            <textarea name="body" required placeholder="Type your reply to the customer..."></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Send Reply</button>
+        </form>
+      </div>
+
+    </div>
+
+    <!-- Right: actions sidebar -->
+    <div class="agent-sidebar">
+
+      <!-- Status update -->
+      <div class="card">
+        <p class="card-title">Update Status</p>
+        <form method="post" action="/dashboard/query/{{ query.id }}/status">
+          <div class="form-group">
+            <select name="new_status">
+              {% for s in statuses %}
+                <option value="{{ s }}" {% if query.status == s %}selected{% endif %}>
+                  {{ s.replace('_',' ').title() }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Update</button>
+        </form>
+      </div>
+
+      <!-- Assign -->
+      <div class="card mt-2">
+        <p class="card-title">Assignment</p>
+        {% if query.assigned_agent_id == agent.id %}
+          <p class="text-muted" style="font-size:.875rem">Assigned to you.</p>
+        {% else %}
+          <form method="post" action="/dashboard/query/{{ query.id }}/assign">
+            <button type="submit" class="btn btn-outline btn-block">Assign to Me</button>
+          </form>
+        {% endif %}
+      </div>
+
+      <!-- Back -->
+      <div class="mt-2">
+        <a href="/dashboard" class="btn btn-outline btn-block">&larr; Back to Dashboard</a>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+{% endblock %}

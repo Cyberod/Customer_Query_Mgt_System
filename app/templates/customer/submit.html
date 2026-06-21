@@ -1,0 +1,45 @@
+{% extends "shared/base.html" %}
+{% block title %}Submit Query{% endblock %}
+
+{% block nav_links %}
+  <a href="/portal">My Queries</a>
+  <a href="/logout">Logout</a>
+{% endblock %}
+
+{% block content %}
+<div class="container-sm">
+  <h1 class="page-title mt-2">Submit a Query</h1>
+
+  <div class="card">
+    <form method="post" action="/portal/submit">
+      <div class="form-group">
+        <label for="subject">Subject</label>
+        <input
+          type="text"
+          id="subject"
+          name="subject"
+          required
+          placeholder="Brief description of your issue"
+        />
+      </div>
+      <div class="form-group">
+        <label for="body">Details</label>
+        <textarea
+          id="body"
+          name="body"
+          required
+          placeholder="Please describe your query in detail. Include any relevant order numbers, dates, or error messages."
+        ></textarea>
+      </div>
+      <div class="flex gap-1 mt-2">
+        <button type="submit" class="btn btn-primary">Submit Query</button>
+        <a href="/portal" class="btn btn-outline">Cancel</a>
+      </div>
+    </form>
+  </div>
+
+  <p class="text-muted mt-2" style="text-align:center">
+    Our AI will classify your query and a support agent will respond shortly.
+  </p>
+</div>
+{% endblock %}

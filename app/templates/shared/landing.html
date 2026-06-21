@@ -1,0 +1,22 @@
+{% extends "shared/base.html" %}
+
+{% block title %}Welcome{% endblock %}
+
+{% block nav_links %}
+  <a href="/login">Login</a>
+  <a href="/register" class="btn btn-primary btn-sm">Get Started</a>
+{% endblock %}
+
+{% block content %}
+<div class="hero">
+  <h1>AI-Powered Customer Support</h1>
+  <p>Submit your queries and get fast, intelligent responses — powered by AI and our support team.</p>
+  <div class="hero-actions">
+    <a href="/register" class="btn btn-primary">Create Account</a>
+    <a href="/login"    class="btn btn-outline">Sign In</a>
+  </div>
+  <p style="margin-top:1.5rem;font-size:.875rem">
+    Already submitted a query? <a href="/track">Track its status &rarr;</a>
+  </p>
+</div>
+{% endblock %}

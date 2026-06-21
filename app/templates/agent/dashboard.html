@@ -1,0 +1,125 @@
+{% extends "shared/base.html" %}
+{% block title %}Agent Dashboard{% endblock %}
+
+{% block nav_links %}
+  <span class="text-muted">{{ agent.full_name }}</span>
+  <a href="/dashboard/analytics">Analytics</a>
+  <a href="/logout">Logout</a>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+
+  <!-- Stats row -->
+  <div class="stats-row mt-2">
+    <div class="stat-card">
+      <div class="stat-value">{{ total }}</div>
+      <div class="stat-label">Total Queries</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color:var(--primary)">{{ stats.get('open', 0) }}</div>
+      <div class="stat-label">Open</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color:var(--warning)">{{ stats.get('in_progress', 0) }}</div>
+      <div class="stat-label">In Progress</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color:var(--success)">{{ stats.get('resolved', 0) }}</div>
+      <div class="stat-label">Resolved</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color:var(--muted)">{{ stats.get('closed', 0) }}</div>
+      <div class="stat-label">Closed</div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="card mt-3">
+    <form method="get" action="/dashboard" class="filter-row">
+      <div class="filter-group">
+        <label>Status</label>
+        <select name="status_filter" onchange="this.form.submit()">
+          <option value="">All</option>
+          {% for s in ['open','in_progress','resolved','closed'] %}
+            <option value="{{ s }}" {% if status_filter == s %}selected{% endif %}>
+              {{ s.replace('_',' ').title() }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Priority</label>
+        <select name="priority_filter" onchange="this.form.submit()">
+          <option value="">All</option>
+          {% for p in ['high','medium','low'] %}
+            <option value="{{ p }}" {% if priority_filter == p %}selected{% endif %}>
+              {{ p.title() }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Category</label>
+        <select name="category_filter" onchange="this.form.submit()">
+          <option value="">All</option>
+          {% for cat in ['billing','technical','general','complaint','other'] %}
+            <option value="{{ cat }}" {% if category_filter == cat %}selected{% endif %}>
+              {{ cat.title() }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      {% if status_filter or priority_filter or category_filter %}
+        <a href="/dashboard" class="btn btn-outline btn-sm" style="align-self:flex-end">Clear</a>
+      {% endif %}
+    </form>
+  </div>
+
+  <!-- Query table -->
+  <div class="card mt-2">
+    {% if queries %}
+      <table class="table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Subject</th>
+            <th>Customer</th>
+            <th>Status</th>
+            <th>Priority</th>
+            <th>Category</th>
+            <th>Submitted</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for q in queries %}
+          <tr style="cursor:pointer" onclick="location.href='/dashboard/query/{{ q.id }}'">
+            <td class="text-muted">{{ q.id }}</td>
+            <td><strong>{{ q.subject }}</strong></td>
+            <td>{{ q.customer.full_name }}</td>
+            <td><span class="badge badge-{{ q.status }}">{{ q.status.replace('_',' ') }}</span></td>
+            <td>
+              {% if q.priority %}
+                <span class="badge badge-{{ q.priority }}">{{ q.priority }}</span>
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+            <td>{{ q.category or "—" }}</td>
+            <td class="text-muted">{{ q.created_at.strftime("%b %d, %Y") }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div style="text-align:center;padding:2rem 0">
+        <p class="text-muted">No queries match the current filters.</p>
+        {% if status_filter or priority_filter or category_filter %}
+          <a href="/dashboard" class="btn btn-outline mt-2">Clear filters</a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

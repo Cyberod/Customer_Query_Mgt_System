@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}CQMS{% endblock %} — AI Query Management</title>
+  <link rel="stylesheet" href="/static/css/main.css" />
+</head>
+<body>
+  <nav>
+    <a class="nav-brand" href="/">&#9741; CQMS</a>
+    <div class="nav-links">
+      {% block nav_links %}{% endblock %}
+    </div>
+  </nav>
+
+  {% block content %}{% endblock %}
+</body>
+</html>

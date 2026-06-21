@@ -1,0 +1,84 @@
+{% extends "shared/base.html" %}
+{% block title %}Query #{{ query.id }}{% endblock %}
+
+{% block nav_links %}
+  <a href="/portal">My Queries</a>
+  <a href="/logout">Logout</a>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="flex-between mt-2" style="margin-bottom:1.2rem">
+    <div>
+      <h1 class="page-title" style="margin-bottom:.25rem">{{ query.subject }}</h1>
+      <span class="text-muted">Query #{{ query.id }} &mdash; submitted {{ query.created_at.strftime("%B %d, %Y at %H:%M") }}</span>
+    </div>
+    <span class="badge badge-{{ query.status }}" style="font-size:.85rem;padding:.3rem .8rem">
+      {{ query.status.replace('_', ' ').title() }}
+    </span>
+  </div>
+
+  <!-- Meta pills -->
+  <div class="query-meta">
+    <div class="meta-item"><span>Priority: </span>
+      {% if query.priority %}<strong>{{ query.priority.title() }}</strong>{% else %}Pending{% endif %}
+    </div>
+    <div class="meta-item"><span>Category: </span>
+      {% if query.category %}<strong>{{ query.category.title() }}</strong>{% else %}Pending{% endif %}
+    </div>
+    <div class="meta-item"><span>Sentiment: </span>
+      {% if query.sentiment %}<strong>{{ query.sentiment.title() }}</strong>{% else %}Pending{% endif %}
+    </div>
+  </div>
+
+  <!-- AI summary -->
+  {% if query.ai_summary %}
+  <div class="alert alert-info mt-2">
+    <strong>AI Summary:</strong> {{ query.ai_summary }}
+  </div>
+  {% endif %}
+
+  <!-- Thread -->
+  <div class="card mt-2">
+    <p class="card-title">Conversation</p>
+    <div class="message-thread">
+
+      <!-- Original query -->
+      <div class="message">
+        <div class="message-header">
+          <strong>{{ user.full_name }} (you)</strong>
+          <span>{{ query.created_at.strftime("%b %d, %Y %H:%M") }}</span>
+        </div>
+        <p>{{ query.body }}</p>
+      </div>
+
+      <!-- Replies -->
+      {% for msg in query.messages %}
+        <div class="message {% if msg.sender_id != user.id %}agent-msg{% endif %} {% if msg.is_ai_draft %}ai-draft{% endif %}">
+          <div class="message-header">
+            <strong>
+              {% if msg.is_ai_draft %}🤖 AI Draft{% elif msg.sender_id == user.id %}You{% else %}Support Agent{% endif %}
+            </strong>
+            <span>{{ msg.created_at.strftime("%b %d, %Y %H:%M") }}</span>
+          </div>
+          <p>{{ msg.body }}</p>
+        </div>
+      {% endfor %}
+
+      {% if not query.messages %}
+        <p class="text-muted" style="text-align:center;padding:1rem 0">
+          No replies yet. Our team will respond shortly.
+        </p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="flex-between mt-2" style="flex-wrap:wrap;gap:.75rem">
+    <a href="/portal" class="btn btn-outline">&larr; Back to My Queries</a>
+    <span class="text-muted" style="font-size:.8rem">
+      Share reference <strong>#{{ query.id }}</strong> to track this query at
+      <a href="/track?ref={{ query.id }}">/track</a>
+    </span>
+  </div>
+</div>
+{% endblock %}

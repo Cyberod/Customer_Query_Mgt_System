@@ -1,0 +1,33 @@
+{% extends "shared/base.html" %}
+{% block title %}Login{% endblock %}
+
+{% block nav_links %}
+  <a href="/register">New here? Create an account</a>
+{% endblock %}
+
+{% block content %}
+<div class="container-sm">
+  <div class="card mt-3">
+    <p class="card-title">Sign in to your account</p>
+
+    {% if registered %}
+      <div class="alert alert-success">Account created! Please sign in.</div>
+    {% endif %}
+    {% if error %}
+      <div class="alert alert-error">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" action="/login">
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" name="email" required placeholder="jane@example.com" />
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required />
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
